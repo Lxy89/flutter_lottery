@@ -1,0 +1,230 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_lottery/screen/login_screen.dart';
+
+class DeleteLottery extends StatefulWidget {
+  const DeleteLottery({super.key});
+
+  @override
+  _DeleteLotteryState createState() => _DeleteLotteryState();
+}
+
+class _DeleteLotteryState extends State<DeleteLottery> {
+  final CollectionReference lotteryCollection =
+      FirebaseFirestore.instance.collection('lotteries');
+  final TextEditingController numberController = TextEditingController();
+  final TextEditingController priceController = TextEditingController();
+
+  // ฟังก์ชันสำหรับเพิ่มลอตเตอรี่
+  Future<void> addLottery(String number, double price) async {
+    await lotteryCollection.add({
+      'number': number,
+      'price': price,
+      'available': true,
+    });
+
+    print("✅ เพิ่มลอตเตอรี่: $number");
+  }
+
+  // ฟังก์ชันสำหรับลบลอตเตอรี่
+  Future<void> deleteLottery(String docId) async {
+    await lotteryCollection.doc(docId).delete();
+
+    print("✅ ลบลอตเตอรี่: $docId");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('ร้านค้าลอตเตอรี่'),
+      leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            // กลับไปที่หน้า Login
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _showAddLotteryDialog();
+        },
+        tooltip: 'เพิ่มลอตเตอรี่',
+        child: Icon(Icons.add),
+      ),
+      body: StreamBuilder(
+        stream: lotteryCollection.snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("ไม่มีลอตเตอรี่"));
+          }
+
+          var lotteries = snapshot.data!.docs;
+
+          return GridView.builder(
+            padding: const EdgeInsets.all(8),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 1.5,
+              crossAxisSpacing: 0,
+              mainAxisSpacing: 0,
+            ),
+            itemCount: lotteries.length,
+            itemBuilder: (context, index) {
+              var lotteryDoc = lotteries[index];
+              var lotteryData = lotteryDoc.data() as Map<String, dynamic>;
+              String lotteryId = lotteryDoc.id;
+
+              return Card(
+                elevation: 3,
+                child: Column(
+                  children: [
+                    ListTile(
+                      title: Text("เลข ${lotteryData['number']}"),
+                      subtitle: Text("ราคา: ${lotteryData['price']} บาท"),
+                    ),
+                    Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: Align(
+                        alignment: Alignment.bottomRight,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            // ปุ่มลบลอตเตอรี่ในแต่ละการ์ด
+                            IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: () {
+                                _showDeleteConfirmationDialog(lotteryId);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  // ฟังก์ชันสำหรับแสดง dialog เพื่อเพิ่มลอตเตอรี่
+  void _showAddLotteryDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('เพิ่มลอตเตอรี่'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: numberController,
+                decoration: InputDecoration(labelText: 'เลขลอตเตอรี่'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: priceController,
+                decoration: InputDecoration(labelText: 'ราคา'),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // ปิด dialog
+              },
+              child: Text('ยกเลิก'),
+            ),
+            TextButton(
+              onPressed: () {
+                String number = numberController.text;
+                double price = double.tryParse(priceController.text) ?? 0.0;
+                if (number.isNotEmpty && price > 0) {
+                  addLottery(number, price);
+                  numberController.clear();
+                  priceController.clear();
+                  Navigator.of(context).pop(); // ปิด dialog
+                }
+              },
+              child: Text('เพิ่ม'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ฟังก์ชันสำหรับแสดง dialog ยืนยันการลบ
+  void _showDeleteConfirmationDialog(String docId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('ยืนยันการลบ'),
+          content: Text('คุณต้องการลบลอตเตอรี่เลขนี้หรือไม่?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // ปิด dialog
+              },
+              child: Text('ยกเลิก'),
+            ),
+            TextButton(
+              onPressed: () {
+                deleteLottery(docId);
+                Navigator.of(context).pop(); // ปิด dialog
+              },
+              child: Text('ยืนยัน'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> buyLottery(String docId, String number, double price) async {
+    await lotteryCollection.doc(docId).update({'available': false});
+
+    // บันทึกข้อมูลการซื้อ
+    await FirebaseFirestore.instance.collection('purchases').add({
+      'lottery_id': docId,
+      'number': number,
+      'price': price,
+      'buyer': "user123", // เปลี่ยนเป็น user ID ของผู้ใช้
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    // แสดงข้อความยืนยันการซื้อ
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("การซื้อสำเร็จ"),
+          content: Text("คุณได้ซื้อเลข $number ราคา $price บาท"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // ปิด Dialog
+              },
+              child: Text("ตกลง"),
+            ),
+          ],
+        );
+      },
+    );
+
+    print("✅ ซื้อสำเร็จ: $docId");
+  }
+}

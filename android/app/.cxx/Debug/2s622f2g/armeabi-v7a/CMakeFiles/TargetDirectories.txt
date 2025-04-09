@@ -1,0 +1,2 @@
+D:/applottery1/flutter_lottery/android/app/.cxx/Debug/2s622f2g/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/applottery1/flutter_lottery/android/app/.cxx/Debug/2s622f2g/armeabi-v7a/CMakeFiles/rebuild_cache.dir

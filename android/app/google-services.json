@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "360253731757",
+    "project_id": "lottery-dc66a",
+    "storage_bucket": "lottery-dc66a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:360253731757:android:f33b9a899f61d6d6012724",
+        "android_client_info": {
+          "package_name": "com.example.flutter_lottery"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdU5DwI405uUylL_NAWVNqf8RLPGkm0qg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
