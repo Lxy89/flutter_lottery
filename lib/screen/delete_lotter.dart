@@ -26,6 +26,69 @@ class _DeleteLotteryState extends State<DeleteLottery> {
     print("✅ เพิ่มลอตเตอรี่: $number");
   }
 
+// ฟังก์ชันสำหรับแก้ไขลอตเตอรี่
+  Future<void> editLottery(
+      String docId, String newNumber, double newPrice) async {
+    await lotteryCollection.doc(docId).update({
+      'number': newNumber,
+      'price': newPrice,
+    });
+
+    print("✅ แก้ไขลอตเตอรี่: $docId");
+  }
+
+// ฟังก์ชันสำหรับแสดง dialog แก้ไขลอตเตอรี่
+  void _showEditLotteryDialog(
+      String docId, String currentNumber, double currentPrice) {
+    TextEditingController numberController =
+        TextEditingController(text: currentNumber);
+    TextEditingController priceController =
+        TextEditingController(text: currentPrice.toString());
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('แก้ไขลอตเตอรี่'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: numberController,
+                decoration: InputDecoration(labelText: 'เลขลอตเตอรี่'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: priceController,
+                decoration: InputDecoration(labelText: 'ราคา'),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // ปิด dialog
+              },
+              child: Text('ยกเลิก'),
+            ),
+            TextButton(
+              onPressed: () {
+                String newNumber = numberController.text;
+                double newPrice = double.tryParse(priceController.text) ?? 0.0;
+                if (newNumber.isNotEmpty && newPrice > 0) {
+                  editLottery(docId, newNumber, newPrice);
+                  Navigator.of(context).pop(); // ปิด dialog
+                }
+              },
+              child: Text('บันทึก'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // ฟังก์ชันสำหรับลบลอตเตอรี่
   Future<void> deleteLottery(String docId) async {
     await lotteryCollection.doc(docId).delete();
@@ -36,8 +99,9 @@ class _DeleteLotteryState extends State<DeleteLottery> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('ร้านค้าลอตเตอรี่'),
-      leading: IconButton(
+      appBar: AppBar(
+        title: const Text('ร้านค้าลอตเตอรี่'),
+        leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             // กลับไปที่หน้า Login
@@ -68,7 +132,7 @@ class _DeleteLotteryState extends State<DeleteLottery> {
           var lotteries = snapshot.data!.docs;
 
           return GridView.builder(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(0),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               childAspectRatio: 1.5,
@@ -91,12 +155,22 @@ class _DeleteLotteryState extends State<DeleteLottery> {
                     ),
                     Spacer(),
                     Padding(
-                      padding: const EdgeInsets.only(right: 4),
+                      padding: const EdgeInsets.only(right: 1),
                       child: Align(
                         alignment: Alignment.bottomRight,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
+                            //Edit
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: () {
+                                _showEditLotteryDialog(
+                                    lotteryId,
+                                    lotteryData['number'],
+                                    lotteryData['price']);
+                              },
+                            ),
                             // ปุ่มลบลอตเตอรี่ในแต่ละการ์ด
                             IconButton(
                               icon: Icon(Icons.delete),

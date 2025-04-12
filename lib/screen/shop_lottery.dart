@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_lottery/model/cart_service.dart';
+import 'package:flutter_lottery/screen/Cart_screen.dart';
 
 class LotteryShop extends StatefulWidget {
   final String userEmail;
@@ -57,8 +57,8 @@ class _LotteryShopState extends State<LotteryShop> {
       });
     });
     // บันทึกข้อมูลตะกร้า
-    CartService cartService = CartService();
-    cartService.saveCart(cart);
+    // CartService cartService = CartService();
+    // cartService.saveCart(cart);
   }
 
   // ฟังก์ชันเพื่อจัดการการซื้อ
@@ -69,13 +69,13 @@ class _LotteryShopState extends State<LotteryShop> {
     await lotteryCollection.doc(docId).update({'available': false});
 
     // บันทึกการซื้อใน Firestore
-    await FirebaseFirestore.instance.collection('purchases').add({
-      'lottery_id': docId,
-      'number': number,
-      'price': price,
-      'buyer': widget.userEmail, // ใช้ email ของผู้ใช้ที่ล็อกอิน
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+    // await FirebaseFirestore.instance.collection('purchases').add({
+    //   'lottery_id': docId,
+    //   'number': number,
+    //   'price': price,
+    //   'buyer': widget.userEmail, // ใช้ email ของผู้ใช้ที่ล็อกอิน
+    //   'timestamp': FieldValue.serverTimestamp(),
+    // });
 
     // แสดง Dialog ยืนยันการซื้อ
     showDialog(
@@ -100,55 +100,66 @@ class _LotteryShopState extends State<LotteryShop> {
   }
 
   // ฟังก์ชันเพื่อไปหน้าตะกร้า
-  void viewCart() {
-    Navigator.push(
+  Future<void> viewCart() async {
+    final updatedCart = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => CartScreen(cart: cart),
       ),
     );
+
+    if (updatedCart != null && updatedCart is List) {
+      setState(() {
+        cart = List<Map<String, dynamic>>.from(updatedCart);
+      });
+    }
   }
 
 // กลับไปหน้า Login
   void logout(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text("ออกจากระบบ"),
-      content: Text("คุณแน่ใจหรือไม่?"),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context), // ปิด Dialog
-          child: Text("ยกเลิก"),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context); // ปิด Dialog
-            FirebaseAuth.instance.signOut(); // ออกจากระบบ
-            Navigator.pushReplacementNamed(context, '/login'); // กลับหน้า Login
-          },
-          child: Text("ออก", style: TextStyle(color: Colors.red)),
-        ),
-      ],
-    ),
-  );
-}
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("ออกจากระบบ"),
+        content: Text("คุณแน่ใจหรือไม่?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), // ปิด Dialog
+            child: Text("ยกเลิก"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context); // ปิด Dialog
 
-  @override
-  void initState() {
-    super.initState();
-    // โหลดข้อมูลตะกร้าจาก SharedPreferences
-    _loadCart();
+              // CartService cartService = CartService();
+              // await cartService.clearCart(); // ลบข้อมูลตะกร้า
+
+              await FirebaseAuth.instance.signOut(); // ออกจากระบบ
+              Navigator.pushReplacementNamed(
+                  context, '/login'); // กลับหน้า Login
+            },
+            child: Text("ออก", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   // โหลดข้อมูลตะกร้าจาก SharedPreferences
+  //   _loadCart();
+  // }
 
   // ฟังก์ชันโหลดข้อมูลตะกร้าจาก SharedPreferences
-  Future<void> _loadCart() async {
-    CartService cartService = CartService();
-    List<Map<String, dynamic>> cartData = await cartService.loadCart();
-    setState(() {
-      cart = cartData; // อัปเดตข้อมูลตะกร้า
-    });
-  }
+  // Future<void> _loadCart() async {
+  //   CartService cartService = CartService();
+  //   List<Map<String, dynamic>> cartData = await cartService.loadCart();
+  //   setState(() {
+  //     cart = cartData; // อัปเดตข้อมูลตะกร้า
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -174,9 +185,7 @@ class _LotteryShopState extends State<LotteryShop> {
                 WelcomeText(userEmail: widget.userEmail),
                 SizedBox(width: 8),
                 //แสดง widget logOut
-               LogoutButton(
-                onLogout: () => logout(context)
-               ),
+                LogoutButton(onLogout: () => logout(context)),
               ],
             ),
           ),
@@ -243,45 +252,6 @@ class _LotteryShopState extends State<LotteryShop> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// Cart screen to view selected items
-class CartScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> cart;
-
-  const CartScreen({super.key, required this.cart});
-
-  @override
-  Widget build(BuildContext context) {
-    double totalPrice = cart.fold(0, (sum, item) => sum + item['price']);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("ตะกร้าของคุณ"),
-      ),
-      body: cart.isEmpty
-          ? Center(child: Text("ตะกร้าของคุณว่าง"))
-          : ListView.builder(
-              itemCount: cart.length,
-              itemBuilder: (context, index) {
-                var item = cart[index];
-                return ListTile(
-                  title: Text("เลข ${item['number']}"),
-                  subtitle: Text("ราคา: ${item['price']} บาท"),
-                );
-              },
-            ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ElevatedButton(
-          onPressed: () {
-            // Implement checkout functionality
-          },
-          child: Text("ไปที่การชำระเงิน (รวม: $totalPrice บาท)"),
-        ),
       ),
     );
   }

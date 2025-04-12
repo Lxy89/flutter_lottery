@@ -22,7 +22,6 @@ class LoginScreenState extends State<LoginScreen> {
       String password = passwordController.text.trim();
 
       if (email == "admin" && password == "1") {
-        // ถ้าเป็น admin ให้ไปยังหน้าจัดการลอตเตอรี่
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Login Successful")),
         );
@@ -30,7 +29,7 @@ class LoginScreenState extends State<LoginScreen> {
           context,
           MaterialPageRoute(builder: (context) => DeleteLottery()),
         );
-        return;  // หากเป็น admin ให้หยุดการทำงานที่ตรงนี้
+        return; 
       }
 
       try {
