@@ -14,28 +14,28 @@ void main() async {
   WidgetsFlutterBinding
       .ensureInitialized(); //  ทำให้แน่ใจว่า Flutter ถูก initialize ก่อนใช้ Firebase
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp();//  เรียกใช้ Firebase ก่อนเริ่มแอป
     runApp(MaterialApp(
       theme: ThemeData(
         appBarTheme: AppBarTheme(
-          backgroundColor: const Color.fromARGB(255, 96, 48, 128), // กำหนดสี AppBar ทุกหน้า
-          foregroundColor: Colors.white, // กำหนดสีตัวหนังสือและไอคอน
+          backgroundColor: const Color.fromARGB(255, 96, 48, 128),
+          foregroundColor: Colors.white,
         ),
         
         primarySwatch: Colors.blue, // เปลี่ยนสีหลักของแอป
-        scaffoldBackgroundColor: Colors.grey[200], // เปลี่ยนสีพื้นหลัง
+        scaffoldBackgroundColor: Colors.grey[200],
         textTheme: TextTheme(
-          bodyMedium: TextStyle(color: Colors.black), // เปลี่ยนสีตัวอักษร
+          bodyMedium: TextStyle(color: Colors.black),
         ),
 
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color.fromARGB(255, 61, 139, 64), // สีพื้นหลังปุ่ม
-            foregroundColor: Colors.white, // สีข้อความปุ่ม
+            backgroundColor: const Color.fromARGB(255, 61, 139, 64),
+            foregroundColor: Colors.white,
           ),
         ),
       ),
-      home: LoginScreen(), //  เรียกใช้ Firebase ก่อนเริ่มแอป
+      home: LoginScreen(),
       routes: {
         '/login': (context) => LoginScreen(),
       },

@@ -16,7 +16,7 @@ class PromptPayPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final promptPayNumber = ''; // ใส่เบอร์พร้อมเพย์จริง
+    final promptPayNumber = '08999999'; // ใส่เบอร์พร้อมเพย์
     final qrData = 'promptpay://$promptPayNumber/${totalPrice.toStringAsFixed(2)}';
 
     return Scaffold(

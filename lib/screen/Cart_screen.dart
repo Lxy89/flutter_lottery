@@ -41,10 +41,12 @@ class _CartScreenState extends State<CartScreen> {
   Widget build(BuildContext context) {
     double totalPrice = _cart.fold(0, (sum, item) => sum + item['price']);
 
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.pop(context, _cart); // ส่งกลับ cart ที่อัปเดต
-        return false; // กันไม่ให้ pop ซ้ำ
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          Navigator.pop(context, _cart); // ส่ง cart กลับ
+        }
       },
       child: Scaffold(
         appBar: AppBar(
@@ -86,7 +88,7 @@ class _CartScreenState extends State<CartScreen> {
 
                     if (result == true) {
                       setState(() {
-                        _cart.clear(); // เคลียร์ตะกร้าท้องถิ่น
+                        _cart.clear(); //เคลียร์ตะกร้าหลังจ่ายเงิน
                       });
                       Navigator.pop(context, []); // ส่งกลับตะกร้าว่าง
                     }

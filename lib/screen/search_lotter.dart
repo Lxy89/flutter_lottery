@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class SearchLotteryScreen extends StatefulWidget {
   const SearchLotteryScreen({super.key});
@@ -10,28 +9,10 @@ class SearchLotteryScreen extends StatefulWidget {
 }
 
 class _SearchLotteryScreenState extends State<SearchLotteryScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  bool isAdmin = false;
 
   final TextEditingController searchController = TextEditingController();
   String searchQuery = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAdminStatus();
-  }
-
-  void _checkAdminStatus() async {
-    User? user = _auth.currentUser;
-    if (user != null) {
-      DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
-      setState(() {
-        isAdmin = userDoc.exists && userDoc['role'] == 'admin';
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,14 +58,6 @@ class _SearchLotteryScreenState extends State<SearchLotteryScreen> {
                     return ListTile(
                       title: Text("Number: ${doc['number']}"),
                       subtitle: Text("Price: ${doc['price']} Baht"),
-                      trailing: isAdmin
-                          ? IconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: () {
-                                _deleteLottery(doc.id);
-                              },
-                            )
-                          : null,
                     );
                   }).toList(),
                 );
@@ -94,10 +67,6 @@ class _SearchLotteryScreenState extends State<SearchLotteryScreen> {
         ],
       ),
     );
-  }
-
-  void _deleteLottery(String id) async {
-    await _firestore.collection('lotteries').doc(id).delete();
   }
 }
 

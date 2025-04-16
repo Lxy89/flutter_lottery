@@ -47,7 +47,7 @@ class _LotteryShopState extends State<LotteryShop> {
 
   List<Map<String, dynamic>> cart = [];
 
-  // ฟังก์ชันเพื่อเพิ่มสินค้าในตะกร้า
+  // ฟังก์ชันเพื่อเพิ่ม Cart สินค้าในตะกร้า
   void addToCart(String docId, String number, double price) {
     setState(() {
       cart.add({
