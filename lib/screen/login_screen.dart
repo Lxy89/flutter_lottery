@@ -29,11 +29,12 @@ class LoginScreenState extends State<LoginScreen> {
           context,
           MaterialPageRoute(builder: (context) => DeleteLottery()),
         );
-        return; 
+        return;
       }
 
       try {
-        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email,
           password: password,
         );
@@ -54,7 +55,6 @@ class LoginScreenState extends State<LoginScreen> {
             SnackBar(content: Text("ไม่พบผู้ใช้")),
           );
         }
-
       } on FirebaseAuthException catch (e) {
         // หากมีข้อผิดพลาดจาก Firebase
         ScaffoldMessenger.of(context).showSnackBar(
@@ -82,6 +82,10 @@ class LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              Image.asset(
+                'assets/image/logo11.png',
+                width: 280,
+              ),
               SizedBox(
                 width: 350,
                 child: TextFormField(
@@ -123,7 +127,8 @@ class LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => RegisterScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => RegisterScreen()),
                       );
                     },
                     child: Text("Sign Up", style: TextStyle(fontSize: 24)),
