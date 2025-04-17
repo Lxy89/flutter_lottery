@@ -2,18 +2,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_lottery/screen/login_screen.dart';
 
+// สร้างหน้าจอแบบ Stateful เพื่อให้รองรับการเปลี่ยนแปลงสถานะ (เพิ่ม/ลบ/แก้ไขลอตเตอรี่)
 class DeleteLottery extends StatefulWidget {
   const DeleteLottery({super.key});
 
   @override
-  _DeleteLotteryState createState() => _DeleteLotteryState();
+  _DeleteLotteryState createState() => _DeleteLotteryState(); //รับ key เพื่อให้ Flutter จัดการ widget tree
 }
 
 class _DeleteLotteryState extends State<DeleteLottery> {
-  final CollectionReference lotteryCollection =
-      FirebaseFirestore.instance.collection('lotteries');
+  final CollectionReference lotteryCollection = FirebaseFirestore.instance.collection('lotteries'); //เชื่อมต่อกับ Collection
   final TextEditingController numberController = TextEditingController();
-  final TextEditingController priceController = TextEditingController();
+  final TextEditingController priceController = TextEditingController(); //ควบคุมการกรอกเลขลอตเตอรี่และราคาใน TextField
 
   // ฟังก์ชันสำหรับเพิ่มลอตเตอรี่
   Future<void> addLottery(String number, double price) async {
@@ -33,12 +33,12 @@ class _DeleteLotteryState extends State<DeleteLottery> {
       'number': newNumber,
       'price': newPrice,
     });
-
+  //แก้ไข document ที่มี docId ใน collection lotteries เลขและราคาใหม่ ที่แก้ไขแล้ว
     print("✅ แก้ไขลอตเตอรี่: $docId");
   }
 
 // ฟังก์ชันสำหรับแสดง dialog แก้ไขลอตเตอรี่
-  void _showEditLotteryDialog(
+  void _showEditLotteryDialog( //ใช้แสดงข้อมูลเดิมใน dialog เพื่อให้ผู้ใช้แก้ไข
       String docId, String currentNumber, double currentPrice) {
     TextEditingController numberController =
         TextEditingController(text: currentNumber);
@@ -96,6 +96,7 @@ class _DeleteLotteryState extends State<DeleteLottery> {
     print("✅ ลบลอตเตอรี่: $docId");
   }
 
+  // UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -120,16 +121,16 @@ class _DeleteLotteryState extends State<DeleteLottery> {
         child: Icon(Icons.add),
       ),
       body: StreamBuilder(
-        stream: lotteryCollection.snapshots(),
+        stream: lotteryCollection.snapshots(), 
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+          if (snapshot.connectionState == ConnectionState.waiting) { //ตรวจว่าอยู่ในสถานะ "กำลังรอ"
+            return const Center(child: CircularProgressIndicator()); //วงกลมหมุน
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text("ไม่มีลอตเตอรี่"));
           }
 
-          var lotteries = snapshot.data!.docs;
+          var lotteries = snapshot.data!.docs; //ดึงรายการลอตเตอรี่ทั้งหมดออกมาเก็บไว้ในตัวแปร
 
           return GridView.builder(
             padding: const EdgeInsets.all(0),
@@ -141,6 +142,7 @@ class _DeleteLotteryState extends State<DeleteLottery> {
             ),
             itemCount: lotteries.length,
             itemBuilder: (context, index) {
+               // ดึงข้อมูลลอตเตอรี่แต่ละตัว
               var lotteryDoc = lotteries[index];
               var lotteryData = lotteryDoc.data() as Map<String, dynamic>;
               String lotteryId = lotteryDoc.id;
@@ -268,37 +270,37 @@ class _DeleteLotteryState extends State<DeleteLottery> {
     );
   }
 
-  Future<void> buyLottery(String docId, String number, double price) async {
-    await lotteryCollection.doc(docId).update({'available': false});
+  // Future<void> buyLottery(String docId, String number, double price) async {
+  //   await lotteryCollection.doc(docId).update({'available': false});
 
-    // บันทึกข้อมูลการซื้อ
-    await FirebaseFirestore.instance.collection('purchases').add({
-      'lottery_id': docId,
-      'number': number,
-      'price': price,
-      'buyer': "user123", // เปลี่ยนเป็น user ID ของผู้ใช้
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+  //   // บันทึกข้อมูลการซื้อ
+  //   await FirebaseFirestore.instance.collection('purchases').add({
+  //     'lottery_id': docId,
+  //     'number': number,
+  //     'price': price,
+  //     'buyer': "user123", // เปลี่ยนเป็น user ID ของผู้ใช้
+  //     'timestamp': FieldValue.serverTimestamp(),
+  //   });
 
-    // แสดงข้อความยืนยันการซื้อ
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("การซื้อสำเร็จ"),
-          content: Text("คุณได้ซื้อเลข $number ราคา $price บาท"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // ปิด Dialog
-              },
-              child: Text("ตกลง"),
-            ),
-          ],
-        );
-      },
-    );
+  //   // แสดงข้อความยืนยันการซื้อ
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text("การซื้อสำเร็จ"),
+  //         content: Text("คุณได้ซื้อเลข $number ราคา $price บาท"),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop(); // ปิด Dialog
+  //             },
+  //             child: Text("ตกลง"),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
 
-    print("✅ ซื้อสำเร็จ: $docId");
-  }
+  //   print("✅ ซื้อสำเร็จ: $docId");
+  // }
 }
